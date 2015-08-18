@@ -78,7 +78,7 @@ verySpecialSend
 ```
 
 ... and, of course, you could still provide an `andThen`, `map`, `mapError`, `onError` etc.
-to do any further work that might be needed with the Http.Error or Http.Result.
+to do any further work that might be needed with the `Http.Error` or `Http.Result`.
 
 Alternatively, if the `Settings` need to vary at each call-site, you can do something
 like this:
