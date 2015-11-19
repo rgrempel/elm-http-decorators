@@ -68,7 +68,7 @@ addCacheBuster func settings request =
     let
         sendWithTime time =
             func settings
-                { request | url <- urlWithTime time }
+                { request | url = urlWithTime time }
 
         urlWithTime time =
             -- essentially, we want to add ?cacheBuster=123482
