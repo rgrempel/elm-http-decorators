@@ -1,4 +1,8 @@
-module Http.Decorators (addCacheBuster, promoteError, interpretStatus) where
+module Http.Decorators exposing
+    ( addCacheBuster
+    , promoteError
+    , interpretStatus
+    )
 
 {-| This module supplies several functions which you can use to decorate
 `Http.send` in order to create a function with additional behaviour. You can
@@ -51,7 +55,7 @@ Note that some of this is redundant if you are using `Http.fromJson` anyway, sin
 
 import Http exposing (Settings, Request, RawError(..), Error(..), Response, send)
 import Task exposing (Task, andThen, mapError, succeed, fail)
-import TaskTutorial exposing (getCurrentTime)
+import Time exposing (now)
 import String exposing (contains, endsWith)
 
 
@@ -86,7 +90,7 @@ addCacheBuster func settings request =
                 else request.url ++ "?"
 
     in
-        getCurrentTime `andThen` sendWithTime
+        now `andThen` sendWithTime
 
 
 {-| Decorates the result of `Http.send` so that the error type is `Http.Error`

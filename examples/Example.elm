@@ -1,12 +1,10 @@
-module Example where
+module Example exposing ()
 
-import Effects exposing (Effects, Never)
-import StartApp exposing (App)
 import Task exposing (Task, toResult)
 import Html exposing (Html, h4, div, text, button, input)
 import Html.Attributes exposing (id, type')
 import Html.Events exposing (onClick, targetValue, on)
-import Signal exposing (Signal, Address)
+import Html.App as App
 
 import Http.Decorators exposing (addCacheBuster, promoteError, interpretStatus)
 import Http exposing (..)
@@ -64,22 +62,16 @@ useLessSpecialSend =
         }
 
 
-app : App Model
 app =
-    StartApp.start
+    App.program
         { init = init
         , update = update
         , view = view
-        , inputs = []
+        , subscriptions = \_ -> Sub.none
         }
 
 
-main : Signal Html
 main = app.html
-
-
-port tasks : Signal (Task.Task Never ())
-port tasks = app.tasks
 
 
 type alias Model =
@@ -87,11 +79,11 @@ type alias Model =
     }
 
 
-init : (Model, Effects Action)
-init = (Model "Initial state", Effects.none)
+init : (Model, Cmd Msg)
+init = (Model "Initial state", Cmd.none)
 
 
-type Action
+type Msg
     = OneTask
     | SpecialSend
     | VerySpecialSend
@@ -100,66 +92,66 @@ type Action
     | HandleResponse (Result Error Response)
 
 
-update : Action -> Model -> (Model, Effects Action)
-update action model =
-    case action of
+never : Never -> a
+never n = never n
+
+
+update : Msg -> Model -> (Model, Cmd Msg)
+update msg model =
+    case msg of
         OneTask ->
             ( { model | message = "Sending with addCacheBuster" }
             , oneTask
                 |> toResult
-                |> Task.map HandleRawResponse
-                |> Effects.task
+                |> Task.perform never HandleRawResponse
             )
 
         SpecialSend ->
             ( { model | message = "Sending with specialSend" }
             , useSpecialSend
                 |> toResult
-                |> Task.map HandleRawResponse
-                |> Effects.task
+                |> Task.perform never HandleRawResponse
             )
 
         VerySpecialSend ->
             ( { model | message = "Sending with verySpecialSend" }
             , useVerySpecialSend
                 |> toResult
-                |> Task.map HandleResponse
-                |> Effects.task
+                |> Task.perform never HandleResponse
             )
 
         LessSpecialSend ->
             ( { model | message = "Sending with lessSpecialSend" }
             , useLessSpecialSend
                 |> toResult
-                |> Task.map HandleResponse
-                |> Effects.task
+                |> Task.perform never HandleResponse
             )
 
         HandleRawResponse result ->
             ( { model | message = toString result }
-            , Effects.none
+            , Cmd.none
             )
-        
+
         HandleResponse result ->
             ( { model | message = toString result }
-            , Effects.none
+            , Cmd.none
             )
- 
 
-view : Address Action -> Model -> Html
+
+view : Model -> Html Msg
 view address model =
     div []
         [ button
-            [ onClick address OneTask ]
+            [ onClick OneTask ]
             [ text "addCacheBuster" ]
         , button
-            [ onClick address SpecialSend ]
+            [ onClick SpecialSend ]
             [ text "specialSend" ]
         , button
-            [ onClick address VerySpecialSend ]
+            [ onClick VerySpecialSend ]
             [ text "verySpecialSend" ]
         , button
-            [ onClick address LessSpecialSend ]
+            [ onClick LessSpecialSend ]
             [ text "lessSpecialSend" ]
 
         , h4 [] [ text "Message" ]
