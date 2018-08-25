@@ -1,17 +1,7 @@
-module Http.Decorators
-    exposing
-        ( RawRequest
-        , addCacheBuster
-        , cacheBusterUrl
-        , defaultGet
-        , defaultGetString
-        , defaultPost
-        , sendRaw
-        , sendWithCacheBuster
-        , taskWithCacheBuster
-        , toRequest
-        , toTaskRaw
-        )
+module Http.Decorators exposing
+    ( RawRequest, defaultPost, defaultGet, defaultGetString, sendRaw, toTaskRaw, toRequest
+    , cacheBusterUrl, addCacheBuster, taskWithCacheBuster, sendWithCacheBuster
+    )
 
 {-| This module contains several functions that build on the
 [elm-lang/http](https://package.elm-lang.org/packages/elm-lang/http/latest) package.
@@ -204,7 +194,6 @@ Often you won't need to call this directly -- you can use [`addCacheBuster`](#ad
 
 
     -- Should resolve to something like "http://elm-lang.org?param=7&cacheBuster=12348257"
-
     urlWithTime2 : Task x String
     urlWithTime2 =
         cacheBusterUrl "http://elm-lang.org?param=7"
@@ -221,12 +210,14 @@ cacheBusterUrl url =
         urlWithParamSeparator =
             if endsWith "?" urlWithQueryIndicator then
                 urlWithQueryIndicator
+
             else
                 urlWithQueryIndicator ++ "&"
 
         urlWithQueryIndicator =
             if contains "?" url then
                 url
+
             else
                 url ++ "?"
     in

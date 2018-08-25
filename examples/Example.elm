@@ -1,4 +1,4 @@
-module Main exposing (..)
+module Main exposing (Model, Msg(..), init, lessVerboseReq, main, manualReq, oneTask, update, urlWithTime, urlWithTime2, view)
 
 import Html exposing (Html, button, div, h4, input, text)
 import Html.Attributes exposing (id, type_)
