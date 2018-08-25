@@ -3,6 +3,11 @@
 This package provides some useful types and functions which work with
 [elm-lang/http](https://github.com/elm-lang/http)
 
+For new projects, I would recommend using
+[lukewestby/elm-http-builder](https://package.elm-lang.org/packages/lukewestby/elm-http-builder/latest/)
+instead of this package. It is capable of doing everything this package
+does, and more.
+
 ## Transparent Requests
 
 The `Request` type in the `Http` module

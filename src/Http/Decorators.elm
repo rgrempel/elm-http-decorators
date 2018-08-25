@@ -6,9 +6,15 @@ module Http.Decorators exposing
     )
 
 {-| This module contains several functions that build on the
-[`elm-lang/http`](/packages/elm-lang/http/1.0.0) module.
+[elm-lang/http](https://package.elm-lang.org/packages/elm-lang/http/latest) package.
 Note that `interpretStatus` and `promoteError` are no longer included, because
 the `Http` module now does what they used to do.
+
+For new projects, I would recommend using
+[lukewestby/elm-http-builder](https://package.elm-lang.org/packages/lukewestby/elm-http-builder/latest/)
+instead of this package. It is capable of doing everything this package
+does, and more.
+
 
 ## Transparent Requests
 
