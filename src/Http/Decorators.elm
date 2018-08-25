@@ -1,9 +1,17 @@
-module Http.Decorators exposing
-    ( RawRequest
-    , defaultPost, defaultGet, defaultGetString
-    , sendRaw, toTaskRaw, toRequest
-    , cacheBusterUrl, addCacheBuster, taskWithCacheBuster, sendWithCacheBuster
-    )
+module Http.Decorators
+    exposing
+        ( RawRequest
+        , addCacheBuster
+        , cacheBusterUrl
+        , defaultGet
+        , defaultGetString
+        , defaultPost
+        , sendRaw
+        , sendWithCacheBuster
+        , taskWithCacheBuster
+        , toRequest
+        , toTaskRaw
+        )
 
 {-| This module contains several functions that build on the
 [elm-lang/http](https://package.elm-lang.org/packages/elm-lang/http/latest) package.
@@ -20,22 +28,23 @@ does, and more.
 
 @docs RawRequest, defaultPost, defaultGet, defaultGetString, sendRaw, toTaskRaw, toRequest
 
+
 ## Cache busting
 
 @docs cacheBusterUrl, addCacheBuster, taskWithCacheBuster, sendWithCacheBuster
 
 -}
 
-import Http exposing (Request, Error, Header, Body, Expect, expectJson, expectString, emptyBody)
+import Http exposing (Body, Error, Expect, Header, Request, emptyBody, expectJson, expectString)
+import Json.Decode
+import String exposing (contains, endsWith)
 import Task exposing (Task)
 import Time exposing (Time)
-import String exposing (contains, endsWith)
-import Json.Decode
 
 
 {-| The [`Request`](/packages/elm-lang/http/1.0.0/Http#Request) type in the `Http` module
 is opaque, in the sense that once you have a `Request`, you cannot extract its
-parts in order to construct a different `Request`.  The `RawRequest` type is a
+parts in order to construct a different `Request`. The `RawRequest` type is a
 workaround for that, allowing you to work with the parts of a request.
 
 You can construct a `RawRequest` manually, by filling in its parts. The various parts
@@ -44,7 +53,7 @@ have the same meaning as the parameters to [`Http.request`](/packages/elm-lang/h
     req : RawRequest String
     req =
         { method = "GET"
-        , headers = [header "X-Test-Header" "Foo"]
+        , headers = [ header "X-Test-Header" "Foo" ]
         , url = "http://elm-lang.org"
         , body = Http.emptyBody
         , expect = Http.expectString
@@ -60,17 +69,19 @@ some defaults. These functions are like [`Http.get`](/packages/elm-lang/http/1.0
 `RawRequest` which you can further customize, rather than an opaque
 [`Request`](/packages/elm-lang/http/1.0.0/Http#Request).
 
-    -- This produces a `RawRequest` equivalent to the manually-constructed
-    -- example above.
     req : RawRequest String
     req =
-        let default = defaultGetString "http://elm-lang.org"
-        in {default | headers = [header "X-Test-Header" "Foo"]}
+        let
+            default =
+                defaultGetString "http://elm-lang.org"
+        in
+        { default | headers = [ header "X-Test-Header" "Foo" ] }
 
 Once you have a `RawRequest`, you can use [`toRequest`](#toRequest) to turn it into a
 [`Request`](/packages/elm-lang/http/1.0.0/Http#Request) that the `Http` module can use.
 Alternatively, you can [`sendRaw`](#sendRaw) or
 [`toTaskRaw`](#toTaskRaw) to turn the `RawRequest` directly into a `Cmd` or `Task`.
+
 -}
 type alias RawRequest a =
     { method : String
@@ -92,8 +103,12 @@ the `RawRequest` to [`sendRaw`](#sendRaw) or [`toTaskRaw`](#toTaskRaw).
 
     req : RawRequest String
     req =
-        let default = defaultGet "http://elm-lang.org"
-        in {default | timeout = Just (1 * Time.second)}
+        let
+            default =
+                defaultGet "http://elm-lang.org"
+        in
+        { default | timeout = Just (1 * Time.second) }
+
 -}
 defaultGetString : String -> RawRequest String
 defaultGetString url =
@@ -113,6 +128,7 @@ defaultGetString url =
 You can then use [`toRequest`](#toRequest) to make an actual
 [`Http.Request`](/packages/elm-lang/http/1.0.0/Http#Request), or supply
 the `RawRequest` to [`sendRaw`](#sendRaw) or [`toTaskRaw`](#toTaskRaw).
+
 -}
 defaultGet : String -> Json.Decode.Decoder a -> RawRequest a
 defaultGet url decoder =
@@ -132,6 +148,7 @@ a `RawRequest` that you could further customize.
 You can then use [`toRequest`](#toRequest) to make an actual
 [`Http.Request`](/packages/elm-lang/http/1.0.0/Http#Request), or supply
 the `RawRequest` to [`sendRaw`](#sendRaw) or [`toTaskRaw`](#toTaskRaw).
+
 -}
 defaultPost : String -> Body -> Json.Decode.Decoder a -> RawRequest a
 defaultPost url body decoder =
@@ -151,7 +168,8 @@ This is just another name for
 [`Http.request`](/packages/elm-lang/http/1.0.0/Http#request).
 -}
 toRequest : RawRequest a -> Http.Request a
-toRequest = Http.request
+toRequest =
+    Http.request
 
 
 {-| Like [`Http.send`](/packages/elm-lang/http/1.0.0/Http#send),
@@ -180,12 +198,13 @@ otherwise take place at some point between the client and server.
 Often you won't need to call this directly -- you can use [`addCacheBuster`](#addCacheBuster),
 [`taskWithCacheBuster`](#taskWithCacheBuster) or [`sendWithCacheBuster`](#sendWithCacheBuster) instead.
 
-    -- Should resolve to something like "http://elm-lang.org?cacheBuster=12348257"
     urlWithTime : Task x String
     urlWithTime =
         cacheBusterUrl "http://elm-lang.org"
 
+
     -- Should resolve to something like "http://elm-lang.org?param=7&cacheBuster=12348257"
+
     urlWithTime2 : Task x String
     urlWithTime2 =
         cacheBusterUrl "http://elm-lang.org?param=7"
@@ -197,20 +216,21 @@ cacheBusterUrl url =
         -- essentially, we want to add ?cacheBuster=123482
         -- or, &cacheBuster=123482
         urlWithTime time =
-            urlWithParamSeparator ++ "cacheBuster=" ++ (toString time)
+            urlWithParamSeparator ++ "cacheBuster=" ++ toString time
 
         urlWithParamSeparator =
-            if endsWith "?" urlWithQueryIndicator
-               then urlWithQueryIndicator
-               else urlWithQueryIndicator ++ "&"
+            if endsWith "?" urlWithQueryIndicator then
+                urlWithQueryIndicator
+            else
+                urlWithQueryIndicator ++ "&"
 
         urlWithQueryIndicator =
-            if contains "?" url
-                then url
-                else url ++ "?"
-
+            if contains "?" url then
+                url
+            else
+                url ++ "?"
     in
-        Task.map urlWithTime Time.now
+    Task.map urlWithTime Time.now
 
 
 {-| Given a `RawRequest`, add a cache-busting parameter to the URL. This uses
@@ -222,11 +242,12 @@ Thus, you often would not need to call this directly -- you could use
 [`taskWithCacheBuster`](#taskWithCacheBuster) or [`sendWithCacheBuster`](#sendWithCacheBuster)
 instead. You would only need `addCacheBuster` in cases where you need to do some
 further processing of the resolved `RawRequest` before turning it into a `Task` or a `Cmd`.
+
 -}
 addCacheBuster : RawRequest a -> Task x (RawRequest a)
 addCacheBuster req =
     Task.map
-        (\s -> {req | url = s})
+        (\s -> { req | url = s })
         (cacheBusterUrl req.url)
 
 
@@ -236,6 +257,7 @@ a `Task` that executes the request.
 This is useful in cases where the resulting `Task` is part of some larger
 chain of tasks. In cases where you are just going to turn this very `Task`
 into a `Cmd`, you could use [`sendWithCacheBuster`](#sendWithCacheBuster) instead.
+
 -}
 taskWithCacheBuster : RawRequest a -> Task Error a
 taskWithCacheBuster req =
@@ -249,6 +271,7 @@ This is a convenience for cases in which your `RawRequest` is meant to result
 in a simple `Cmd`. For more complex cases, you can use [`taskWithCacheBuster`](#taskWithCacheBuster),
 [`addCacheBuster`](#addCacheBuster) or [`cacheBusterUrl`](#cacheBusterUrl), depending
 on how much further customization you need.
+
 -}
 sendWithCacheBuster : (Result Error a -> msg) -> RawRequest a -> Cmd msg
 sendWithCacheBuster tagger req =
