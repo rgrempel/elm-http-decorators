@@ -29,7 +29,7 @@ import Http exposing (Body, Error, Expect, Header, Request, emptyBody, expectJso
 import Json.Decode
 import String exposing (contains, endsWith)
 import Task exposing (Task)
-import Time exposing (Time)
+import Time exposing (Posix, posixToMillis)
 
 
 {-| The [`Request`](/packages/elm-lang/http/1.0.0/Http#Request) type in the `Http` module
@@ -79,7 +79,7 @@ type alias RawRequest a =
     , url : String
     , body : Body
     , expect : Expect a
-    , timeout : Maybe Time
+    , timeout : Maybe Float
     , withCredentials : Bool
     }
 
@@ -205,7 +205,7 @@ cacheBusterUrl url =
         -- essentially, we want to add ?cacheBuster=123482
         -- or, &cacheBuster=123482
         urlWithTime time =
-            urlWithParamSeparator ++ "cacheBuster=" ++ toString time
+            urlWithParamSeparator ++ "cacheBuster=" ++ String.fromInt (posixToMillis time)
 
         urlWithParamSeparator =
             if endsWith "?" urlWithQueryIndicator then

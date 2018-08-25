@@ -1,5 +1,6 @@
 module Main exposing (Model, Msg(..), init, lessVerboseReq, main, manualReq, oneTask, update, urlWithTime, urlWithTime2, view)
 
+import Browser
 import Html exposing (Html, button, div, h4, input, text)
 import Html.Attributes exposing (id, type_)
 import Html.Events exposing (on, onClick, targetValue)
@@ -10,7 +11,7 @@ import Time
 
 
 main =
-    Html.program
+    Browser.element
         { init = init
         , update = update
         , view = view
@@ -23,9 +24,10 @@ type alias Model =
     }
 
 
-init : ( Model, Cmd Msg )
+init : () -> ( Model, Cmd Msg )
 init =
-    ( Model "Initial state", Cmd.none )
+    always
+        ( Model "Initial state", Cmd.none )
 
 
 type Msg
@@ -107,7 +109,7 @@ update msg model =
             ( model, Task.perform HandleString urlWithTime2 )
 
         HandleResult result ->
-            ( { model | message = toString result }
+            ( { model | message = Debug.toString result }
             , Cmd.none
             )
 
